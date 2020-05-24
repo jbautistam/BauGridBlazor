@@ -1,0 +1,176 @@
+﻿@typeparam TypeData
+
+<div class="col-12 row">
+	<table class="@TableClass">
+		<thead class="@HeaderClass">
+			<tr>
+				@TableHeader
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (TypeData item in Items)
+			{
+				<tr class="@RowClass">
+					@RowTemplate(item)
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@if (PagesVisible)
+{
+	<ul class="pagination justify-content-end" style="margin:20px 0">
+		@if (Page > 1)
+		{
+			<li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="(async _ => await UpdatePageAsync(Page - 1))">Previous</a></li>
+		}
+		else
+		{
+			<li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+		}
+
+		@if (Pages > 10 && Page > 5)
+		{
+			<li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+		}
+
+		@for (int index = 1; index <= Pages; index++)
+		{
+			int pageNumber = index;
+
+			if (index >= Page - 5 && index <= Page + 5)
+			{
+				if (index == Page)
+				{
+					<li class="page-item active"><span class="page-link">@(index)</span></li>
+				}
+				else
+				{
+					<li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="(async _ => await UpdatePageAsync(pageNumber))">@(index)</a></li>
+				}
+			}
+		}
+
+
+		@if (Pages > 10 && Page < Pages - 5)
+		{
+			<li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+		}
+
+		@if (Page < Pages)
+		{
+			<li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="(async _ => await UpdatePageAsync(Page + 1))">Next</a></li>
+		}
+		else
+		{
+			<li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+		}
+	</ul>
+}
+
+@code {
+	/// <summary>
+	///		Clase de la tabla
+	/// </summary>
+	[Parameter]
+	public string TableClass { get; set; } = "table table-bordered table-striped mb-0";
+
+	/// <summary>
+	///		Clase de la cabecera de la tabla
+	/// </summary>
+	[Parameter]
+	public string HeaderClass { get; set; } = "bg-info";
+
+	/// <summary>
+	///		Clase de las filas de la tabla
+	/// </summary>
+	[Parameter]
+	public string RowClass { get; set; }
+
+	/// <summary>
+	///		Cabecera de la tabla
+	/// </summary>
+	[Parameter]
+	public RenderFragment TableHeader { get; set; }
+
+	/// <summary>
+	///		Plantilla de la fila
+	/// </summary>
+	[Parameter]
+	public RenderFragment<TypeData> RowTemplate { get; set; }
+
+	/// <summary>
+	///		Elementos de la tabla
+	/// </summary>
+	[Parameter]
+	public List<TypeData> Items { get; set; }
+
+	/// <summary>
+	///		Tamaño de página
+	/// </summary>
+	[Parameter]
+	public int PageSize { get; set; } = 20;
+
+	/// <summary>
+	///		Página
+	/// </summary>
+	[Parameter]
+	public int Page { get; set; } = 1;
+
+	/// <summary>
+	///		Número de filas
+	/// </summary>
+	[Parameter]
+	public int TotalRecords { get; set; }
+
+	/// <summary>
+	///		Evento al que se llama al cambiar de página
+	/// </summary>
+	[Parameter]
+	public EventCallback<TableTemplatePageEventArgs> OnChangePage { get; set; }
+
+	/// <summary>
+	///		Inicializa el componente
+	/// </summary>
+	private void InitComponent()
+	{
+		ShowPager();
+	}
+
+	/// <summary>
+	///		Muestra la paginación
+	/// </summary>
+	private void ShowPager()
+	{
+		// Indica si se debe mostrar la paginación
+		PagesVisible = TotalRecords > PageSize && PageSize > 0;
+		// Muestra los botones
+		if (PagesVisible)
+			Pages = TotalRecords / PageSize;
+	}
+
+	/// <summary>
+	///		Modifica la página activa
+	/// </summary>
+	private async Task UpdatePageAsync(int newPage)
+	{
+		await OnChangePage.InvokeAsync(new TableTemplatePageEventArgs(newPage));
+	}
+
+	/// <summary>
+	///		Indica si se muestran las páginas
+	/// </summary>
+	private bool PagesVisible { get; set; }
+
+	/// <summary>
+	///		Número de páginas
+	/// </summary>
+	private int Pages { get; set; }
+
+	protected override void OnParametersSet()
+	{
+		InitComponent();
+		base.OnParametersSet();
+	}
+}

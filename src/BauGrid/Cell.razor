@@ -1,0 +1,32 @@
+﻿<td class="align-middle @GetCssAlign()">@ChildContent</td>
+
+@code
+{
+	/// <summary>
+	///		Obtiene la clase para la alineación
+	/// </summary>
+	private string GetCssAlign()
+	{
+		switch (Align)
+		{
+			case Column.Align.Left:
+				return "text-left";
+			case Column.Align.Right:
+				return "text-rigth";
+			default:
+				return "text-center";
+		}
+	}
+
+	/// <summary>
+	///     Contenido de la celda
+	/// </summary>
+	[Parameter]
+	public RenderFragment ChildContent { get; set; }
+
+	/// <summary>
+	///     Alineación
+	/// </summary>
+	[Parameter]
+	public Column.Align Align { get; set; } = Column.Align.Left;
+}
